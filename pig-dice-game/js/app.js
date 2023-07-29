@@ -1,109 +1,102 @@
-var player1Score, player2Score, player1TempScore, player2TempScore, diceDom;
-var currentPlayer = 0;
-var tempScore = 0;
+'use strict';
+const score0Element = document.getElementById('score--0');
+const score1Element = document.getElementById('score--1');
+const playerZero = document.querySelector('.player--0');
+const playerOne = document.querySelector('.player--1');
+const playerZeroScores = document.getElementById('current--0');
+const playerOneScores = document.getElementById('current--1');
 
-var totalScore1 = 0, totalScore2 = 0;
-player1Score = $('.total-score-1');
-player2Score = $('.total-score-2');
-player1TempScore = $('.score-1');
-player2TempScore = $('.score-2');
-diceDom = $('#dice');
+const diceImg = document.querySelector('.dice');
+const newGame = document.querySelector('.btn--new');
+const rollDice = document.querySelector('.btn--roll');
+const holdDice = document.querySelector('.btn--hold');
 
-diceDom.style.display = 'none';
-player1Score.innerHTML = totalScore1;
-player2Score.innerHTML = totalScore2;
-player1TempScore.innerHTML = 0;
-player2TempScore.innerHTML = 0;
-$('.player-1').style.backgroundColor = '#dddddd';
-$('.player-b-1').style.backgroundColor = '#dddddd';
+let scores, currentScore, activePlayer, playing;
 
+//Function to initilize settings
 
+const init = function () {
+  scores = [0, 0];
+  currentScore = 0;
+  activePlayer = 0;
+  //Playing mode on
+  playing = true;
+  //Starting position
+  score0Element.textContent = 0;
+  score1Element.textContent = 0;
+  //Scores reset
+  playerZeroScores.textContent = 0;
+  playerOneScores.textContent = 0;
+  //Image hidden
+  diceImg.classList.add('hidden');
+  //Remove winner class
+  playerZero.classList.remove('player--winner');
+  playerOne.classList.remove('player--winner');
+  //Remove active classes
+  playerZero.classList.add('player--active');
+  playerOne.classList.remove('player--active');
+};
 
-$('.dice-roll').addEventListener('click', function(){
-    
-    diceDom.style.display = 'block';
-    var dice = Math.floor((Math.random() * 6) + 1);
-    tempScore += dice;
-    diceDom.src = 'images/dice-'+ dice + '.png';
-    if (dice === 1) {
-        if(currentPlayer === 0 ){
-            currentPlayer = 1;
-            player1TempScore.innerHTML = 0;
-            tempScore = 0;
-            $('.player-1').style.backgroundColor = 'white';
-            $('.player-b-1').style.backgroundColor = 'white';
-            $('.player-2').style.backgroundColor = '#dddddd';
-            $('.player-b-2').style.backgroundColor = '#dddddd';
-            
-        } else {
-            currentPlayer = 0;
-            player2TempScore.innerHTML = 0;
-            tempScore = 0;
-            $('.player-1').style.backgroundColor = '#dddddd';
-            $('.player-b-1').style.backgroundColor = '#dddddd';
-            $('.player-2').style.backgroundColor = 'white';
-            $('.player-b-2').style.backgroundColor = 'white';
-            
-        }
+init();
 
+//Function to switch player
+const playerSwitching = function () {
+  //changing active player and reseting total scores to 0 if they roll 1
+  document.getElementById(`current--${activePlayer}`).textContent = 0;
+  currentScore = 0;
+  activePlayer = activePlayer === 0 ? 1 : 0;
+  //Toggle active player class to change interface
+  playerZero.classList.toggle('player--active');
+  playerOne.classList.toggle('player--active');
+};
+
+rollDice.addEventListener('click', function () {
+  if (playing) {
+    //Generate random dice
+    const dice = Math.trunc(Math.random() * 6) + 1;
+    //Display dice image
+    diceImg.classList.remove('hidden');
+    //Add random dice img to img src
+    diceImg.src ='images/dice-'+ dice + '.png';
+    //Check whether it's 1 and change player
+    if (dice !== 1) {
+      //Keep the current score to the current active player
+      currentScore += dice;
+      document.getElementById(`current--${activePlayer}`).textContent =
+        currentScore;
     } else {
-        if (currentPlayer === 0) {
-            player1TempScore.innerHTML = tempScore;
-        } else {
-            player2TempScore.innerHTML = tempScore;
-        }
+      playerSwitching();
     }
-
+  }
 });
 
-$('.add-points').addEventListener('click', function(){
+//Hold scores
+holdDice.addEventListener('click', function () {
+  if (playing) {
+    //Add current score to active player's score
+    scores[activePlayer] += currentScore;
+    //scores[1] = scores[1] + currentScore;
 
-    
-    
-    if (currentPlayer === 0) {
-            currentPlayer = 1;
-            totalScore1 += tempScore;
-            tempScore = 0;
-            player1TempScore.innerHTML = 0;
-            player1Score.innerHTML = totalScore1;
-            $('.player-1').style.backgroundColor = 'white';
-            $('.player-b-1').style.backgroundColor = 'white';
-            $('.player-2').style.backgroundColor = '#dddddd';
-            $('.player-b-2').style.backgroundColor = '#dddddd';
-            
-        } else {
-            currentPlayer = 0;
-            totalScore2 += tempScore;
-            tempScore = 0;
-            player2TempScore.innerHTML = 0;
-            player2Score.innerHTML = totalScore2;
-            $('.player-1').style.backgroundColor = '#dddddd';
-            $('.player-b-1').style.backgroundColor = '#dddddd';
-            $('.player-2').style.backgroundColor = 'white';
-            $('.player-b-2').style.backgroundColor = 'white';
+    //Display the held score
+    document.getElementById(`score--${activePlayer}`).textContent =
+      scores[activePlayer];
+    //check if score is 100 and they won
+    if (scores[activePlayer] >= 50) {
+      //finish the game
+      playing = false;
+      document
+        .querySelector(`.player--${activePlayer}`)
+        .classList.add('player--winner');
+      document
+        .querySelector(`.player--${activePlayer}`)
+        .classList.remove('player--active');
+      diceImg.classList.add('hidden');
+    } else {
+      //switch player
+      playerSwitching();
     }
-
-    if (totalScore1 >= 200) {
-        $('.player-head-1').innerHTML = 'Hurrey.. You are Winner :)';
-        $('.player-head-1').style.color = '#f44336';
-        player1TempScore.innerHTML = 0;
-        player1Score.innerHTML = 0;
-        player2TempScore.innerHTML = 0;
-        player2Score.innerHTML = 0;
-        diceDom.style.display = 'none';
-    } else if(totalScore2 >= 200) {
-        $('.player-head-2').style.color = '#f44336';
-        $('.player-head-2').innerHTML = 'Hurrey.. You are Winner :)';
-        player1TempScore.innerHTML = 0;
-        player1Score.innerHTML = 0;
-        player2TempScore.innerHTML = 0;
-        player2Score.innerHTML = 0;
-        diceDom.style.display = 'none';
-        
-    }
+  }
 });
 
-
-function $(par) {
-    return document.querySelector(par);
-}
+//Restart game
+newGame.addEventListener('click', init);
